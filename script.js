@@ -1,9 +1,8 @@
-const resultDiv = document.getElementById('result');
-const drawBtn = document.getElementById('drawBtn');
+const mandalart = document.getElementById('mandalart');
 const themeToggle = document.getElementById('themeToggle');
 const body = document.body;
 
-// 테마 관리 로직
+// 1. 테마 관리
 const currentTheme = localStorage.getItem('theme');
 if (currentTheme === 'dark') {
     body.classList.add('dark-mode');
@@ -12,53 +11,95 @@ if (currentTheme === 'dark') {
 
 themeToggle.addEventListener('click', () => {
     body.classList.toggle('dark-mode');
-    
-    let theme = 'light';
-    if (body.classList.contains('dark-mode')) {
-        theme = 'dark';
-        themeToggle.textContent = '🌙';
-    } else {
-        themeToggle.textContent = '☀️';
-    }
+    const theme = body.classList.contains('dark-mode') ? 'dark' : 'light';
+    themeToggle.textContent = theme === 'dark' ? '🌙' : '☀️';
     localStorage.setItem('theme', theme);
 });
 
-// 로또 번호 생성 함수
-function generateLottoNumbers() {
-    const numbers = [];
-    while (numbers.length < 6) {
-        const num = Math.floor(Math.random() * 45) + 1;
-        if (!numbers.includes(num)) {
-            numbers.push(num);
+// 2. 만다라트 그리드 생성
+function initMandalart() {
+    const savedData = JSON.parse(localStorage.getItem('mandalartData')) || {};
+
+    // 9개 블록 생성 (0-8)
+    for (let b = 0; b < 9; b++) {
+        const block = document.createElement('div');
+        block.classList.add('block', `block-${b}`);
+        
+        // 각 블록 내 9개 셀 생성 (0-8)
+        for (let c = 0; c < 9; c++) {
+            const input = document.createElement('textarea');
+            input.classList.add('cell');
+            input.dataset.block = b;
+            input.dataset.cell = c;
+            
+            // 중앙 블록(4번 블록)
+            if (b === 4) {
+                if (c === 4) {
+                    input.classList.add('main-goal');
+                    input.placeholder = '최종 목표';
+                } else {
+                    input.classList.add('sub-goal');
+                    input.placeholder = `핵심 목표 ${c + 1}`;
+                }
+            } 
+            // 주변 블록 (0,1,2,3,5,6,7,8번 블록)
+            else {
+                if (c === 4) {
+                    input.classList.add('sub-goal');
+                    input.placeholder = `핵심 목표 ${b + 1}`;
+                } else {
+                    input.placeholder = `세부 실행`;
+                }
+            }
+
+            // 데이터 불러오기
+            const key = `${b}-${c}`;
+            if (savedData[key]) {
+                input.value = savedData[key];
+            }
+
+            input.addEventListener('input', (e) => handleInput(e));
+            block.appendChild(input);
         }
+        mandalart.appendChild(block);
     }
-    // 오름차순 정렬
-    return numbers.sort((a, b) => a - b);
 }
 
-// 색상 클래스 반환 함수
-function getColorClass(num) {
-    if (num <= 10) return 'yellow';
-    if (num <= 20) return 'blue';
-    if (num <= 30) return 'red';
-    if (num <= 40) return 'gray';
-    return 'green';
+// 3. 동기화 및 저장 로직
+function handleInput(e) {
+    const b = parseInt(e.target.dataset.block);
+    const c = parseInt(e.target.dataset.cell);
+    const value = e.target.value;
+
+    // 동기화 규칙:
+    // 1. 중앙 블록(4)의 주변 셀(c != 4) 입력 시 -> 해당 인덱스의 블록(c)의 중심 셀(4) 동기화
+    if (b === 4 && c !== 4) {
+        updateCell(c, 4, value);
+    } 
+    // 2. 주변 블록(b != 4)의 중심 셀(4) 입력 시 -> 중앙 블록(4)의 해당 인덱스 셀(b) 동기화
+    else if (b !== 4 && c === 4) {
+        updateCell(4, b, value);
+    }
+
+    saveAllData();
 }
 
-// 버튼 클릭 이벤트
-drawBtn.addEventListener('click', () => {
-    const winningNumbers = generateLottoNumbers();
-    
-    // 결과 영역 초기화
-    resultDiv.innerHTML = '';
+function updateCell(b, c, value) {
+    const target = document.querySelector(`.cell[data-block="${b}"][data-cell="${c}"]`);
+    if (target) {
+        target.value = value;
+    }
+}
 
-    // 공 하나씩 생성 (약간의 시간차를 두고)
-    winningNumbers.forEach((num, index) => {
-        setTimeout(() => {
-            const ball = document.createElement('div');
-            ball.classList.add('ball', getColorClass(num));
-            ball.textContent = num;
-            resultDiv.appendChild(ball);
-        }, index * 200); // 0.2초 간격으로 등장
+function saveAllData() {
+    const data = {};
+    document.querySelectorAll('.cell').forEach(input => {
+        const key = `${input.dataset.block}-${input.dataset.cell}`;
+        if (input.value) {
+            data[key] = input.value;
+        }
     });
-});
+    localStorage.setItem('mandalartData', JSON.stringify(data));
+}
+
+initMandalart();
