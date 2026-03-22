@@ -32,7 +32,6 @@ body {
     margin-bottom: 2rem;
     width: 100%;
     max-width: 900px;
-    position: relative;
 }
 
 .header h1 {
@@ -88,6 +87,7 @@ body {
     outline: none;
 }
 
+/* Mandalart Grid */
 .mandalart-container {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -109,9 +109,7 @@ body {
     overflow: hidden;
 }
 
-.block-4 {
-    border: 2px solid var(--primary-color);
-}
+.block-4 { border: 2px solid var(--primary-color); }
 
 .cell-wrapper {
     position: relative;
@@ -119,36 +117,39 @@ body {
     height: 100%;
 }
 
+/* 수직 중앙 정렬을 위해 div contenteditable 사용 예정 */
 .cell {
     width: 100%;
     height: 100%;
-    padding: 5px;
+    padding: 10px;
     border: none;
     outline: none;
     font-family: inherit;
     font-size: 0.85rem;
     text-align: center;
-    resize: none;
     background-color: var(--action-item-bg);
     color: var(--text-color);
     display: flex;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
+    word-break: keep-all;
+    line-height: 1.4;
+    cursor: text;
     transition: all 0.2s;
-    z-index: 1;
+    overflow: hidden;
 }
 
 .cell:focus {
-    background-color: var(--primary-color);
+    background-color: var(--primary-color) !important;
     color: white;
 }
 
+/* 이미지 배경 */
 .cell.has-image {
     background-size: cover;
     background-position: center;
     color: white;
-    text-shadow: 0 0 5px rgba(0,0,0,0.8), 0 0 10px rgba(0,0,0,0.5);
+    text-shadow: 0 0 5px rgba(0,0,0,0.8);
 }
 
 .cell.has-image::before {
@@ -156,16 +157,15 @@ body {
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
     background: rgba(0, 0, 0, 0.3);
-    z-index: -1;
+    z-index: 0;
 }
 
-.image-upload-btn {
+.cell * { z-index: 1; position: relative; }
+
+.image-upload-btn, .image-delete-btn {
     position: absolute;
-    bottom: 5px;
-    right: 5px;
     width: 22px;
     height: 22px;
-    background: rgba(255, 255, 255, 0.8);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -175,75 +175,45 @@ body {
     opacity: 0;
     transition: all 0.2s;
     z-index: 10;
-    border: 1px solid #ccc;
-}
-
-.image-delete-btn {
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    width: 20px;
-    height: 20px;
-    background: rgba(255, 77, 77, 0.9);
-    color: white;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 10px;
-    cursor: pointer;
-    opacity: 0;
-    transition: all 0.2s;
-    z-index: 10;
     border: none;
-    visibility: hidden;
 }
 
-.cell.has-image ~ .image-delete-btn {
-    visibility: visible;
-}
+.image-upload-btn { bottom: 5px; right: 5px; background: rgba(255, 255, 255, 0.8); border: 1px solid #ccc; }
+.image-delete-btn { top: 5px; right: 5px; background: rgba(255, 77, 77, 0.9); color: white; visibility: hidden; }
 
-.cell-wrapper:hover .image-upload-btn,
-.cell-wrapper:hover .image-delete-btn {
-    opacity: 1;
-}
+.cell.has-image ~ .image-delete-btn { visibility: visible; }
+.cell-wrapper:hover .image-upload-btn, .cell-wrapper:hover .image-delete-btn { opacity: 1; }
 
-.main-goal {
-    background-color: var(--main-goal-bg) !important;
-    font-weight: bold;
-    color: var(--primary-color);
-}
+.main-goal { background-color: var(--main-goal-bg) !important; font-weight: bold; color: var(--primary-color); }
+.sub-goal { background-color: var(--sub-goal-bg) !important; font-weight: 600; }
 
-.sub-goal {
-    background-color: var(--sub-goal-bg) !important;
-    font-weight: 600;
-}
-
+/* Divider - 점선으로 변경 */
 .divider {
     width: 100%;
     max-width: 900px;
-    height: 1px;
-    background-color: var(--border-color);
-    margin: 3rem 0;
+    height: 0;
+    border-top: 2px dotted var(--border-color);
+    margin: 4rem 0;
 }
 
+/* 성경 구절 섹션 */
 .verses-section {
     width: 100%;
     max-width: 900px;
-    margin-bottom: 3rem;
+    margin-bottom: 4rem;
     text-align: center;
 }
 
 .verses-section h2 {
-    font-size: 1.2rem;
+    font-size: 1.4rem;
     color: var(--primary-color);
-    margin-bottom: 2rem;
+    margin-bottom: 2.5rem;
 }
 
 .verses-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 30px;
+    gap: 40px;
 }
 
 .verse-item {
@@ -252,41 +222,36 @@ body {
     align-items: center;
 }
 
-.verse-item span {
-    font-size: 0.75rem;
-    font-weight: 600;
-    margin-bottom: 5px;
-    color: var(--primary-color);
-    opacity: 0.8;
-}
-
 .verse-input {
     width: 100%;
     background: none;
     border: none;
     border-bottom: 1px solid var(--primary-color);
     color: var(--text-color);
-    font-size: 0.85rem;
-    padding: 8px 0;
+    font-size: 0.95rem;
+    padding: 10px 0;
     text-align: center;
     font-style: italic;
     outline: none;
     transition: all 0.3s;
 }
 
+.verse-input:focus {
+    border-bottom-width: 2px;
+    background-color: rgba(74, 144, 226, 0.05);
+}
+
+/* 예시 섹션 */
 .example-section {
     width: 100%;
     max-width: 900px;
-    margin-top: 1rem;
-    padding-top: 2rem;
-    border-top: 2px dashed var(--border-color);
+    margin-top: 2rem;
+    padding-top: 3rem;
+    border-top: 1px solid var(--border-color);
     text-align: center;
 }
 
-.example-section h2 {
-    margin-bottom: 2rem;
-    color: var(--primary-color);
-}
+.example-section h2 { margin-bottom: 2rem; color: var(--primary-color); font-size: 1.3rem; }
 
 .example-mandalart {
     transform: scale(0.5);
@@ -294,20 +259,17 @@ body {
     margin-bottom: -450px;
 }
 
-.example-mandalart .cell {
-    cursor: text;
-}
-
 @media (max-width: 600px) {
     .mandalart-container { gap: 5px; }
-    .cell { font-size: 0.65rem; padding: 2px; }
+    .cell { font-size: 0.7rem; padding: 5px; }
     .header h1 { font-size: 1.5rem; }
-    .verses-grid { grid-template-columns: 1fr; }
+    .verses-grid { grid-template-columns: 1fr; gap: 20px; }
 }
 
 .footer {
-    margin-top: 2rem;
+    margin-top: 4rem;
     text-align: center;
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     opacity: 0.6;
+    padding-bottom: 2rem;
 }

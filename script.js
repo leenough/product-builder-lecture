@@ -6,10 +6,7 @@ const currentTimeDisplay = document.getElementById('currentTime');
 const deadlineInput = document.getElementById('deadlineDate');
 const body = document.body;
 
-// 1. 테마 관리 제거 (항상 화이트 모드)
-localStorage.removeItem('theme');
-
-// 2. 현재 시간 표시 기능
+// 1. 현재 시간 표시 기능
 function updateClock() {
     const now = new Date();
     const year = now.getFullYear();
@@ -23,16 +20,14 @@ function updateClock() {
 setInterval(updateClock, 1000);
 updateClock();
 
-// 3. 데드라인 관리
+// 2. 데드라인 관리
 const savedDeadline = localStorage.getItem('mandalartDeadline');
 if (savedDeadline) deadlineInput.value = savedDeadline;
 deadlineInput.addEventListener('change', (e) => localStorage.setItem('mandalartDeadline', e.target.value));
 
-// 4. 공통 만다라트 생성 로직
+// 3. 공통 만다라트 생성 로직
 function createMandalartGrid(container, storageKey, isEditable = true) {
     const savedData = JSON.parse(localStorage.getItem(storageKey)) || {};
-    const savedVerses = JSON.parse(localStorage.getItem(storageKey + '_verses')) || {};
-    
     const defaultKeywords = storageKey === 'myVisionData' ? [
         "나는새로운피조물", "행복한가정과가족", "건강한라이프",
         "건강한공동체", "내잔이넘치는풍요", "개인의성장",
@@ -47,39 +42,35 @@ function createMandalartGrid(container, storageKey, isEditable = true) {
             const wrapper = document.createElement('div');
             wrapper.classList.add('cell-wrapper');
 
-            const input = document.createElement(isEditable ? 'textarea' : 'div');
-            input.classList.add('cell');
-            input.dataset.block = b;
-            input.dataset.cell = c;
+            const cell = document.createElement('div');
+            cell.classList.add('cell');
+            cell.dataset.block = b;
+            cell.dataset.cell = c;
+            
+            if (isEditable) cell.contentEditable = "true";
             
             const isCore = (b === 4 || c === 4);
-            if (b === 4 && c === 4) {
-                input.classList.add('main-goal');
-                if (isEditable) input.placeholder = '최종 목표';
-            } else if (isCore) {
-                input.classList.add('sub-goal');
-                if (isEditable) {
-                    if (b === 4) input.placeholder = `핵심 목표 ${c + 1}`;
-                    if (c === 4) input.placeholder = `핵심 목표 ${b + 1}`;
-                }
-            }
+            if (b === 4 && c === 4) cell.classList.add('main-goal');
+            else if (isCore) cell.classList.add('sub-goal');
 
+            // 데이터 불러오기
             const key = `${b}-${c}`;
             let cellValue = "";
             if (savedData[key]) {
                 if (typeof savedData[key] === 'object') {
                     cellValue = savedData[key].text || "";
-                    if (savedData[key].image) applyImageToCell(input, savedData[key].image);
+                    if (savedData[key].image) applyImageToCell(cell, savedData[key].image);
                 } else cellValue = savedData[key];
             } else if (defaultKeywords) {
                 if (b === 4) cellValue = defaultKeywords[c];
                 else if (c === 4) cellValue = defaultKeywords[b];
             }
 
+            cell.innerText = cellValue;
+
             if (isEditable) {
-                input.value = cellValue;
-                input.addEventListener('input', (e) => handleInput(e, container, storageKey));
-            } else input.textContent = cellValue;
+                cell.addEventListener('input', (e) => handleInput(e, container, storageKey));
+            }
 
             if (isEditable && isCore) {
                 const uploadBtn = document.createElement('button');
@@ -92,14 +83,16 @@ function createMandalartGrid(container, storageKey, isEditable = true) {
                 fileInput.type = 'file';
                 fileInput.accept = 'image/*';
                 fileInput.style.display = 'none';
+                
                 uploadBtn.addEventListener('click', (e) => { e.stopPropagation(); fileInput.click(); });
-                fileInput.addEventListener('change', (e) => handleImageUpload(e, input, container, storageKey));
-                deleteBtn.addEventListener('click', (e) => { e.stopPropagation(); handleImageDelete(input, container, storageKey); });
-                wrapper.appendChild(input);
+                fileInput.addEventListener('change', (e) => handleImageUpload(e, cell, container, storageKey));
+                deleteBtn.addEventListener('click', (e) => { e.stopPropagation(); handleImageDelete(cell, container, storageKey); });
+                
+                wrapper.appendChild(cell);
                 wrapper.appendChild(uploadBtn);
                 wrapper.appendChild(deleteBtn);
                 wrapper.appendChild(fileInput);
-            } else wrapper.appendChild(input);
+            } else wrapper.appendChild(cell);
 
             block.appendChild(wrapper);
         }
@@ -107,32 +100,32 @@ function createMandalartGrid(container, storageKey, isEditable = true) {
     }
 }
 
-// 5. 성경 구절 섹션 초기화
+// 4. 성경 구절 섹션 초기화 (소제목 제거)
 function initVerseSection() {
     const savedVerses = JSON.parse(localStorage.getItem('mandalartData_verses')) || {};
-    const labels = ["핵심 1", "핵심 2", "핵심 3", "핵심 4", "최종 목표", "핵심 6", "핵심 7", "핵심 8", "핵심 9"];
 
     for (let i = 0; i < 9; i++) {
         const item = document.createElement('div');
         item.classList.add('verse-item');
-        const span = document.createElement('span');
-        span.textContent = labels[i];
+        
         const input = document.createElement('input');
         input.classList.add('verse-input');
-        input.placeholder = `${labels[i]} 관련 말씀`;
+        input.placeholder = `핵심 목표 ${i + 1} 관련 말씀`;
+        if (i === 4) input.placeholder = `최종 목표 관련 말씀`;
+        
         input.value = savedVerses[i] || "";
         input.addEventListener('input', (e) => {
             const verses = JSON.parse(localStorage.getItem('mandalartData_verses')) || {};
             verses[i] = e.target.value;
             localStorage.setItem('mandalartData_verses', JSON.stringify(verses));
         });
-        item.appendChild(span);
+
         item.appendChild(input);
         versesGrid.appendChild(item);
     }
 }
 
-// 6. 오타니 쇼헤이 예시
+// 5. 오타니 쇼헤이 예시
 function initOhtaniExample() {
     const data = {
         "4-4": "8구단 드래프트 1순위", "4-0": "몸만들기", "4-1": "제구", "4-2": "구위", "4-3": "스피드 160km/h", "4-5": "변화구", "4-6": "운", "4-7": "인간성", "4-8": "멘탈",
@@ -149,29 +142,29 @@ function initOhtaniExample() {
             div.classList.add('cell');
             if (b === 4 && c === 4) div.classList.add('main-goal');
             else if (c === 4 || b === 4) div.classList.add('sub-goal');
-            div.textContent = data[`${b}-${c}`] || "";
+            div.innerText = data[`${b}-${c}`] || "";
             block.appendChild(div);
         }
         exampleMandalart.appendChild(block);
     }
 }
 
-// 7. 이벤트 핸들러
+// 6. 이벤트 핸들러
 function handleInput(e, container, storageKey) {
-    const b = parseInt(e.target.dataset.block), c = parseInt(e.target.dataset.cell), value = e.target.value;
+    const b = parseInt(e.target.dataset.block), c = parseInt(e.target.dataset.cell), value = e.target.innerText;
     if (b === 4 && c !== 4) syncCell(container, c, 4, value);
     else if (b !== 4 && c === 4) syncCell(container, 4, b, value);
     saveData(container, storageKey);
 }
 
-function handleImageUpload(e, textCell, container, storageKey) {
+function handleImageUpload(e, cell, container, storageKey) {
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
     reader.onload = (event) => {
         const base64Image = event.target.result;
-        applyImageToCell(textCell, base64Image);
-        const b = parseInt(textCell.dataset.block), c = parseInt(textCell.dataset.cell);
+        applyImageToCell(cell, base64Image);
+        const b = parseInt(cell.dataset.block), c = parseInt(cell.dataset.cell);
         if (b === 4 && c !== 4) syncCell(container, c, 4, null, base64Image);
         else if (b !== 4 && c === 4) syncCell(container, 4, b, null, base64Image);
         saveData(container, storageKey);
@@ -179,9 +172,9 @@ function handleImageUpload(e, textCell, container, storageKey) {
     reader.readAsDataURL(file);
 }
 
-function handleImageDelete(textCell, container, storageKey) {
-    removeImageFromCell(textCell);
-    const b = parseInt(textCell.dataset.block), c = parseInt(textCell.dataset.cell);
+function handleImageDelete(cell, container, storageKey) {
+    removeImageFromCell(cell);
+    const b = parseInt(cell.dataset.block), c = parseInt(cell.dataset.cell);
     if (b === 4 && c !== 4) syncCell(container, c, 4, null, "DELETE");
     else if (b !== 4 && c === 4) syncCell(container, 4, b, null, "DELETE");
     saveData(container, storageKey);
@@ -202,7 +195,7 @@ function removeImageFromCell(cell) {
 function syncCell(container, b, c, text = null, imageUrl = null) {
     const target = container.querySelector(`.cell[data-block="${b}"][data-cell="${c}"]`);
     if (target) {
-        if (text !== null) target.value = text;
+        if (text !== null) target.innerText = text;
         if (imageUrl !== null) {
             if (imageUrl === "DELETE") removeImageFromCell(target);
             else applyImageToCell(target, imageUrl);
@@ -212,9 +205,9 @@ function syncCell(container, b, c, text = null, imageUrl = null) {
 
 function saveData(container, storageKey) {
     const data = {};
-    container.querySelectorAll('.cell').forEach(input => {
-        const key = `${input.dataset.block}-${input.dataset.cell}`;
-        data[key] = { text: input.value || input.textContent, image: input.dataset.image || null };
+    container.querySelectorAll('.cell').forEach(cell => {
+        const key = `${cell.dataset.block}-${cell.dataset.cell}`;
+        data[key] = { text: cell.innerText, image: cell.dataset.image || null };
     });
     localStorage.setItem(storageKey, JSON.stringify(data));
 }
