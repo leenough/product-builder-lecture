@@ -1,5 +1,4 @@
 :root {
-    /* Light Mode */
     --primary-color: #4a90e2;
     --background-color: #f8f9fa;
     --card-background: #ffffff;
@@ -12,7 +11,6 @@
 }
 
 body.dark-mode {
-    /* Dark Mode */
     --background-color: #121212;
     --card-background: #1e1e1e;
     --text-color: #e0e0e0;
@@ -125,7 +123,6 @@ body {
     color: white;
 }
 
-/* Mandalart Grid Layout */
 .mandalart-container {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -182,7 +179,6 @@ body {
     color: white;
 }
 
-/* Image background support for core cells */
 .cell.has-image {
     background-size: cover;
     background-position: center;
@@ -200,30 +196,30 @@ body {
 
 .image-upload-btn {
     position: absolute;
-    bottom: 2px;
-    right: 2px;
-    width: 20px;
-    height: 20px;
-    background: rgba(255, 255, 255, 0.7);
+    bottom: 5px;
+    right: 5px;
+    width: 22px;
+    height: 22px;
+    background: rgba(255, 255, 255, 0.8);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 10px;
+    font-size: 12px;
     cursor: pointer;
     opacity: 0;
-    transition: opacity 0.2s;
+    transition: all 0.2s;
     z-index: 10;
-    border: none;
+    border: 1px solid #ccc;
 }
 
 .image-delete-btn {
     position: absolute;
-    bottom: 2px;
-    left: 2px;
+    top: 5px;
+    right: 5px;
     width: 20px;
     height: 20px;
-    background: rgba(255, 100, 100, 0.7);
+    background: rgba(255, 77, 77, 0.9);
     color: white;
     border-radius: 50%;
     display: flex;
@@ -232,30 +228,19 @@ body {
     font-size: 10px;
     cursor: pointer;
     opacity: 0;
-    transition: opacity 0.2s;
+    transition: all 0.2s;
     z-index: 10;
     border: none;
-    display: none; /* Only show when image exists */
+    visibility: hidden;
 }
 
-.cell.has-image + .image-delete-btn {
-    display: flex;
+.cell.has-image ~ .image-delete-btn {
+    visibility: visible;
 }
 
 .cell-wrapper:hover .image-upload-btn,
 .cell-wrapper:hover .image-delete-btn {
     opacity: 1;
-}
-
-.image-upload-btn:hover,
-.image-delete-btn:hover {
-    background: white;
-    color: #ff4d4d;
-    transform: scale(1.1);
-}
-
-.image-upload-btn:hover {
-    color: var(--primary-color);
 }
 
 .main-goal {
@@ -269,13 +254,67 @@ body {
     font-weight: 600;
 }
 
-/* Example Section Scaling */
-.example-section {
-    margin-top: 4rem;
-    padding-top: 2rem;
-    border-top: 2px dashed var(--border-color);
+.divider {
     width: 100%;
     max-width: 900px;
+    height: 1px;
+    background-color: var(--border-color);
+    margin: 3rem 0;
+}
+
+.verses-section {
+    width: 100%;
+    max-width: 900px;
+    margin-bottom: 3rem;
+    text-align: center;
+}
+
+.verses-section h2 {
+    font-size: 1.2rem;
+    color: var(--primary-color);
+    margin-bottom: 2rem;
+}
+
+.verses-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+}
+
+.verse-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.verse-item span {
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: var(--primary-color);
+    opacity: 0.8;
+}
+
+.verse-input {
+    width: 100%;
+    background: none;
+    border: none;
+    border-bottom: 1px solid var(--primary-color);
+    color: var(--text-color);
+    font-size: 0.85rem;
+    padding: 8px 0;
+    text-align: center;
+    font-style: italic;
+    outline: none;
+    transition: all 0.3s;
+}
+
+.example-section {
+    width: 100%;
+    max-width: 900px;
+    margin-top: 1rem;
+    padding-top: 2rem;
+    border-top: 2px dashed var(--border-color);
     text-align: center;
 }
 
@@ -283,28 +322,22 @@ body {
     margin-bottom: 2rem;
     color: var(--primary-color);
 }
+
 .example-mandalart {
-    transform: scale(0.5); /* 면적 기준 1/4 (가로/세로 1/2) */
+    transform: scale(0.5);
     transform-origin: top center;
-    margin-bottom: -450px; /* 스케일로 인해 생기는 하단 여백 제거 */
+    margin-bottom: -450px;
 }
 
-/* Enable editing but keep the scale */
 .example-mandalart .cell {
     cursor: text;
 }
 
-.footer {
-/* Responsive adjustments */
 @media (max-width: 600px) {
-    .mandalart-container {
-        gap: 5px;
-    }
-    .cell {
-        font-size: 0.65rem;
-        padding: 2px;
-    }
+    .mandalart-container { gap: 5px; }
+    .cell { font-size: 0.65rem; padding: 2px; }
     .header h1 { font-size: 1.5rem; }
+    .verses-grid { grid-template-columns: 1fr; }
 }
 
 .footer {
