@@ -45,9 +45,16 @@ deadlineInput.addEventListener('change', (e) => {
     localStorage.setItem('mandalartDeadline', e.target.value);
 });
 
-// 4. 만다라트 그리드 생성 (편집용)
-function initMandalart() {
-    const savedData = JSON.parse(localStorage.getItem('mandalartData')) || {};
+// 4. 공통 만다라트 생성 로직
+function createMandalartGrid(container, storageKey, isEditable = true) {
+    const savedData = JSON.parse(localStorage.getItem(storageKey)) || {};
+    
+    // 기본 키워드 (나의 비전 예시용)
+    const defaultKeywords = storageKey === 'myVisionData' ? [
+        "나는새로운피조물", "행복한가정과가족", "건강한라이프",
+        "건강한공동체", "내잔이넘치는풍요", "개인의성장",
+        "프로페셔널", "잠언31장의여인", "나를둘러싼환경"
+    ] : null;
 
     for (let b = 0; b < 9; b++) {
         const block = document.createElement('div');
@@ -57,7 +64,7 @@ function initMandalart() {
             const wrapper = document.createElement('div');
             wrapper.classList.add('cell-wrapper');
 
-            const input = document.createElement('textarea');
+            const input = document.createElement(isEditable ? 'textarea' : 'div');
             input.classList.add('cell');
             input.dataset.block = b;
             input.dataset.cell = c;
@@ -66,27 +73,41 @@ function initMandalart() {
             
             if (b === 4 && c === 4) {
                 input.classList.add('main-goal');
-                input.placeholder = '최종 목표';
+                if (isEditable) input.placeholder = '최종 목표';
             } else if (isCore) {
                 input.classList.add('sub-goal');
-                if (b === 4) input.placeholder = `핵심 목표 ${c + 1}`;
-                if (c === 4) input.placeholder = `핵심 목표 ${b + 1}`;
-            }
-
-            // 데이터 및 이미지 불러오기
-            const key = `${b}-${c}`;
-            if (savedData[key]) {
-                if (typeof savedData[key] === 'object') {
-                    input.value = savedData[key].text || "";
-                    if (savedData[key].image) {
-                        applyImageToCell(input, savedData[key].image);
-                    }
-                } else {
-                    input.value = savedData[key];
+                if (isEditable) {
+                    if (b === 4) input.placeholder = `핵심 목표 ${c + 1}`;
+                    if (c === 4) input.placeholder = `핵심 목표 ${b + 1}`;
                 }
             }
 
-            if (isCore) {
+            // 데이터 불러오기
+            const key = `${b}-${c}`;
+            let cellValue = "";
+            
+            if (savedData[key]) {
+                if (typeof savedData[key] === 'object') {
+                    cellValue = savedData[key].text || "";
+                    if (savedData[key].image) applyImageToCell(input, savedData[key].image);
+                } else {
+                    cellValue = savedData[key];
+                }
+            } else if (defaultKeywords) {
+                // 나의 비전 예시 초기값 설정
+                if (b === 4) cellValue = defaultKeywords[c];
+                else if (c === 4) cellValue = defaultKeywords[b];
+            }
+
+            if (isEditable) {
+                input.value = cellValue;
+                input.addEventListener('input', (e) => handleInput(e, container, storageKey));
+            } else {
+                input.textContent = cellValue;
+            }
+
+            // 이미지 업로드 버튼 (편집 가능한 핵심 셀만)
+            if (isEditable && isCore) {
                 const uploadBtn = document.createElement('button');
                 uploadBtn.className = 'image-upload-btn';
                 uploadBtn.innerHTML = '📷';
@@ -95,53 +116,20 @@ function initMandalart() {
                 fileInput.accept = 'image/*';
                 fileInput.style.display = 'none';
                 uploadBtn.addEventListener('click', () => fileInput.click());
-                fileInput.addEventListener('change', (e) => handleImageUpload(e, input));
+                fileInput.addEventListener('change', (e) => handleImageUpload(e, input, container, storageKey));
                 wrapper.appendChild(uploadBtn);
                 wrapper.appendChild(fileInput);
             }
 
-            input.addEventListener('input', (e) => handleInput(e));
             wrapper.appendChild(input);
             block.appendChild(wrapper);
         }
-        mandalart.appendChild(block);
+        container.appendChild(block);
     }
 }
 
-// 5. 나의 비전 예시 생성
-function initMyVisionMandalart() {
-    const keywords = [
-        "나는새로운피조물", "행복한가정과가족", "건강한라이프",
-        "건강한공동체", "내잔이넘치는풍요", "개인의성장",
-        "프로페셔널", "잠언31장의여인", "나를둘러싼환경"
-    ];
-    
-    // 중앙 블록(4)의 각 셀 및 주변 블록의 중심(4) 채우기
-    const data = {};
-    keywords.forEach((word, i) => {
-        // 중앙 블록의 각 셀 (4번 블록의 0~8번 셀)
-        data[`4-${i}`] = word;
-        // 각 블록의 중심 (0~8번 블록의 4번 셀)
-        if (i !== 4) data[`${i}-4`] = word;
-    });
-
-    for (let b = 0; b < 9; b++) {
-        const block = document.createElement('div');
-        block.classList.add('block');
-        for (let c = 0; c < 9; c++) {
-            const div = document.createElement('div');
-            div.classList.add('cell');
-            if (b === 4 && c === 4) div.classList.add('main-goal');
-            else if (c === 4 || b === 4) div.classList.add('sub-goal');
-            div.textContent = data[`${b}-${c}`] || "";
-            block.appendChild(div);
-        }
-        myVisionMandalart.appendChild(block);
-    }
-}
-
-// 6. 오타니 쇼헤이의 예시 생성
-function initExampleMandalart() {
+// 5. 오타니 쇼헤이 예시 (수동 데이터)
+function initOhtaniExample() {
     const data = {
         "4-4": "8구단 드래프트 1순위",
         "4-0": "몸만들기", "4-1": "제구", "4-2": "구위",
@@ -168,8 +156,19 @@ function initExampleMandalart() {
     }
 }
 
-// 이미지 업로드 처리
-function handleImageUpload(e, textCell) {
+// 6. 이벤트 핸들러
+function handleInput(e, container, storageKey) {
+    const b = parseInt(e.target.dataset.block);
+    const c = parseInt(e.target.dataset.cell);
+    const value = e.target.value;
+
+    if (b === 4 && c !== 4) syncCell(container, c, 4, value);
+    else if (b !== 4 && c === 4) syncCell(container, 4, b, value);
+
+    saveData(container, storageKey);
+}
+
+function handleImageUpload(e, textCell, container, storageKey) {
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
@@ -178,9 +177,9 @@ function handleImageUpload(e, textCell) {
         applyImageToCell(textCell, base64Image);
         const b = parseInt(textCell.dataset.block);
         const c = parseInt(textCell.dataset.cell);
-        if (b === 4 && c !== 4) syncImage(c, 4, base64Image);
-        else if (b !== 4 && c === 4) syncImage(4, b, base64Image);
-        saveAllData();
+        if (b === 4 && c !== 4) syncCell(container, c, 4, null, base64Image);
+        else if (b !== 4 && c === 4) syncCell(container, 4, b, null, base64Image);
+        saveData(container, storageKey);
     };
     reader.readAsDataURL(file);
 }
@@ -191,34 +190,24 @@ function applyImageToCell(cell, imageUrl) {
     cell.dataset.image = imageUrl;
 }
 
-function syncImage(b, c, imageUrl) {
-    const target = document.querySelector(`#mandalart .cell[data-block="${b}"][data-cell="${c}"]`);
-    if (target) applyImageToCell(target, imageUrl);
+function syncCell(container, b, c, text = null, imageUrl = null) {
+    const target = container.querySelector(`.cell[data-block="${b}"][data-cell="${c}"]`);
+    if (target) {
+        if (text !== null) target.value = text;
+        if (imageUrl !== null) applyImageToCell(target, imageUrl);
+    }
 }
 
-function handleInput(e) {
-    const b = parseInt(e.target.dataset.block);
-    const c = parseInt(e.target.dataset.cell);
-    const value = e.target.value;
-    if (b === 4 && c !== 4) updateCell(c, 4, value);
-    else if (b !== 4 && c === 4) updateCell(4, b, value);
-    saveAllData();
-}
-
-function updateCell(b, c, value) {
-    const target = document.querySelector(`#mandalart .cell[data-block="${b}"][data-cell="${c}"]`);
-    if (target) target.value = value;
-}
-
-function saveAllData() {
+function saveData(container, storageKey) {
     const data = {};
-    document.querySelectorAll('#mandalart .cell').forEach(input => {
+    container.querySelectorAll('.cell').forEach(input => {
         const key = `${input.dataset.block}-${input.dataset.cell}`;
         data[key] = { text: input.value, image: input.dataset.image || null };
     });
-    localStorage.setItem('mandalartData', JSON.stringify(data));
+    localStorage.setItem(storageKey, JSON.stringify(data));
 }
 
-initMandalart();
-initMyVisionMandalart();
-initExampleMandalart();
+// 초기화
+createMandalartGrid(mandalart, 'mandalartData');
+createMandalartGrid(myVisionMandalart, 'myVisionData');
+initOhtaniExample();

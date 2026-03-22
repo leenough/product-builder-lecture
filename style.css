@@ -251,18 +251,18 @@ body {
     margin-bottom: 2rem;
     color: var(--primary-color);
 }
-
 .example-mandalart {
     transform: scale(0.5); /* 면적 기준 1/4 (가로/세로 1/2) */
     transform-origin: top center;
     margin-bottom: -450px; /* 스케일로 인해 생기는 하단 여백 제거 */
 }
 
+/* Enable editing but keep the scale */
 .example-mandalart .cell {
-    pointer-events: none;
-    user-select: none;
+    cursor: text;
 }
 
+.footer {
 /* Responsive adjustments */
 @media (max-width: 600px) {
     .mandalart-container {
