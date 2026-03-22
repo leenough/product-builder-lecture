@@ -53,33 +53,103 @@ function initMandalart() {
         block.classList.add('block', `block-${b}`);
         
         for (let c = 0; c < 9; c++) {
+            const wrapper = document.createElement('div');
+            wrapper.classList.add('cell-wrapper');
+
             const input = document.createElement('textarea');
             input.classList.add('cell');
             input.dataset.block = b;
             input.dataset.cell = c;
             
+            const isCore = (b === 4 || c === 4);
+            
             if (b === 4 && c === 4) {
                 input.classList.add('main-goal');
                 input.placeholder = '최종 목표';
-            } else if (c === 4 || b === 4) {
+            } else if (isCore) {
                 input.classList.add('sub-goal');
                 if (b === 4) input.placeholder = `핵심 목표 ${c + 1}`;
                 if (c === 4) input.placeholder = `핵심 목표 ${b + 1}`;
             }
 
+            // 데이터 및 이미지 불러오기
             const key = `${b}-${c}`;
             if (savedData[key]) {
-                input.value = savedData[key];
+                if (typeof savedData[key] === 'object') {
+                    input.value = savedData[key].text || "";
+                    if (savedData[key].image) {
+                        applyImageToCell(input, savedData[key].image);
+                    }
+                } else {
+                    input.value = savedData[key];
+                }
+            }
+
+            // 핵심 목표 셀에만 이미지 업로드 버튼 추가
+            if (isCore) {
+                const uploadBtn = document.createElement('button');
+                uploadBtn.className = 'image-upload-btn';
+                uploadBtn.innerHTML = '📷';
+                uploadBtn.title = '이미지 추가';
+                
+                const fileInput = document.createElement('input');
+                fileInput.type = 'file';
+                fileInput.accept = 'image/*';
+                fileInput.style.display = 'none';
+                
+                uploadBtn.addEventListener('click', () => fileInput.click());
+                fileInput.addEventListener('change', (e) => handleImageUpload(e, input));
+                
+                wrapper.appendChild(uploadBtn);
+                wrapper.appendChild(fileInput);
             }
 
             input.addEventListener('input', (e) => handleInput(e));
-            block.appendChild(input);
+            wrapper.appendChild(input);
+            block.appendChild(wrapper);
         }
         mandalart.appendChild(block);
     }
 }
 
-// 5. 예시 만다라트 생성 (오타니 쇼헤이)
+// 이미지 업로드 처리
+function handleImageUpload(e, textCell) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+        const base64Image = event.target.result;
+        applyImageToCell(textCell, base64Image);
+        
+        // 동기화 처리
+        const b = parseInt(textCell.dataset.block);
+        const c = parseInt(textCell.dataset.cell);
+        if (b === 4 && c !== 4) {
+            syncImage(c, 4, base64Image);
+        } else if (b !== 4 && c === 4) {
+            syncImage(4, b, base64Image);
+        }
+        
+        saveAllData();
+    };
+    reader.readAsDataURL(file);
+}
+
+function applyImageToCell(cell, imageUrl) {
+    cell.classList.add('has-image');
+    cell.style.backgroundImage = `url(${imageUrl})`;
+    cell.dataset.image = imageUrl; // 데이터 속성에 저장
+}
+
+function syncImage(b, c, imageUrl) {
+    const target = document.querySelector(`#mandalart .cell[data-block="${b}"][data-cell="${c}"]`);
+    if (target) {
+        applyImageToCell(target, imageUrl);
+    }
+}
+
+// 5. 예시 만다라트 생성
 function initExampleMandalart() {
     const data = {
         "4-4": "8구단 드래프트 1순위",
@@ -109,7 +179,6 @@ function initExampleMandalart() {
             div.classList.add('cell');
             if (b === 4 && c === 4) div.classList.add('main-goal');
             else if (c === 4 || b === 4) div.classList.add('sub-goal');
-            
             div.textContent = data[`${b}-${c}`] || "";
             block.appendChild(div);
         }
@@ -143,9 +212,10 @@ function saveAllData() {
     const data = {};
     document.querySelectorAll('#mandalart .cell').forEach(input => {
         const key = `${input.dataset.block}-${input.dataset.cell}`;
-        if (input.value) {
-            data[key] = input.value;
-        }
+        data[key] = {
+            text: input.value,
+            image: input.dataset.image || null
+        };
     });
     localStorage.setItem('mandalartData', JSON.stringify(data));
 }
