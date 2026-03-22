@@ -94,7 +94,6 @@ function createMandalartGrid(container, storageKey, isEditable = true) {
                     cellValue = savedData[key];
                 }
             } else if (defaultKeywords) {
-                // 나의 비전 예시 초기값 설정
                 if (b === 4) cellValue = defaultKeywords[c];
                 else if (c === 4) cellValue = defaultKeywords[b];
             }
@@ -106,22 +105,35 @@ function createMandalartGrid(container, storageKey, isEditable = true) {
                 input.textContent = cellValue;
             }
 
-            // 이미지 업로드 버튼 (편집 가능한 핵심 셀만)
+            // 이미지 업로드 및 삭제 버튼
             if (isEditable && isCore) {
                 const uploadBtn = document.createElement('button');
                 uploadBtn.className = 'image-upload-btn';
                 uploadBtn.innerHTML = '📷';
+                
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'image-delete-btn';
+                deleteBtn.innerHTML = '✖';
+                deleteBtn.title = '이미지 삭제';
+
                 const fileInput = document.createElement('input');
                 fileInput.type = 'file';
                 fileInput.accept = 'image/*';
                 fileInput.style.display = 'none';
+                
                 uploadBtn.addEventListener('click', () => fileInput.click());
                 fileInput.addEventListener('change', (e) => handleImageUpload(e, input, container, storageKey));
+                
+                deleteBtn.addEventListener('click', () => handleImageDelete(input, container, storageKey));
+                
+                wrapper.appendChild(input);
                 wrapper.appendChild(uploadBtn);
+                wrapper.appendChild(deleteBtn);
                 wrapper.appendChild(fileInput);
+            } else {
+                wrapper.appendChild(input);
             }
 
-            wrapper.appendChild(input);
             block.appendChild(wrapper);
         }
         container.appendChild(block);
@@ -184,17 +196,39 @@ function handleImageUpload(e, textCell, container, storageKey) {
     reader.readAsDataURL(file);
 }
 
+function handleImageDelete(textCell, container, storageKey) {
+    removeImageFromCell(textCell);
+    const b = parseInt(textCell.dataset.block);
+    const c = parseInt(textCell.dataset.cell);
+    if (b === 4 && c !== 4) syncCell(container, c, 4, null, ""); // 빈 문자열로 삭제 동기화
+    else if (b !== 4 && c === 4) syncCell(container, 4, b, null, "");
+    saveData(container, storageKey);
+}
+
 function applyImageToCell(cell, imageUrl) {
+    if (!imageUrl) {
+        removeImageFromCell(cell);
+        return;
+    }
     cell.classList.add('has-image');
     cell.style.backgroundImage = `url(${imageUrl})`;
     cell.dataset.image = imageUrl;
+}
+
+function removeImageFromCell(cell) {
+    cell.classList.remove('has-image');
+    cell.style.backgroundImage = '';
+    delete cell.dataset.image;
 }
 
 function syncCell(container, b, c, text = null, imageUrl = null) {
     const target = container.querySelector(`.cell[data-block="${b}"][data-cell="${c}"]`);
     if (target) {
         if (text !== null) target.value = text;
-        if (imageUrl !== null) applyImageToCell(target, imageUrl);
+        if (imageUrl !== null) {
+            if (imageUrl === "") removeImageFromCell(target);
+            else applyImageToCell(target, imageUrl);
+        }
     }
 }
 
@@ -202,7 +236,7 @@ function saveData(container, storageKey) {
     const data = {};
     container.querySelectorAll('.cell').forEach(input => {
         const key = `${input.dataset.block}-${input.dataset.cell}`;
-        data[key] = { text: input.value, image: input.dataset.image || null };
+        data[key] = { text: input.value || input.textContent, image: input.dataset.image || null };
     });
     localStorage.setItem(storageKey, JSON.stringify(data));
 }
