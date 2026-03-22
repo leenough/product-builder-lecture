@@ -160,6 +160,31 @@ body {
     .header h1 { font-size: 1.5rem; }
 }
 
+.example-section {
+    margin-top: 4rem;
+    padding-top: 2rem;
+    border-top: 2px dashed var(--border-color);
+    width: 100%;
+    max-width: 900px;
+    text-align: center;
+}
+
+.example-section h2 {
+    margin-bottom: 2rem;
+    color: var(--primary-color);
+}
+
+.example-mandalart {
+    transform: scale(0.5); /* 1/2 width & height = 1/4 area */
+    transform-origin: top center;
+    margin-bottom: -450px; /* Offset the scale transform empty space */
+}
+
+.example-mandalart .cell {
+    pointer-events: none; /* Make example non-editable */
+    user-select: none;
+}
+
 .footer {
     margin-top: 2rem;
     text-align: center;

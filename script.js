@@ -1,4 +1,5 @@
 const mandalart = document.getElementById('mandalart');
+const exampleMandalart = document.getElementById('exampleMandalart');
 const themeToggle = document.getElementById('themeToggle');
 const body = document.body;
 
@@ -16,43 +17,29 @@ themeToggle.addEventListener('click', () => {
     localStorage.setItem('theme', theme);
 });
 
-// 2. 만다라트 그리드 생성
+// 2. 만다라트 그리드 생성 (편집용)
 function initMandalart() {
     const savedData = JSON.parse(localStorage.getItem('mandalartData')) || {};
 
-    // 9개 블록 생성 (0-8)
     for (let b = 0; b < 9; b++) {
         const block = document.createElement('div');
         block.classList.add('block', `block-${b}`);
         
-        // 각 블록 내 9개 셀 생성 (0-8)
         for (let c = 0; c < 9; c++) {
             const input = document.createElement('textarea');
             input.classList.add('cell');
             input.dataset.block = b;
             input.dataset.cell = c;
             
-            // 중앙 블록(4번 블록)
-            if (b === 4) {
-                if (c === 4) {
-                    input.classList.add('main-goal');
-                    input.placeholder = '최종 목표';
-                } else {
-                    input.classList.add('sub-goal');
-                    input.placeholder = `핵심 목표 ${c + 1}`;
-                }
-            } 
-            // 주변 블록 (0,1,2,3,5,6,7,8번 블록)
-            else {
-                if (c === 4) {
-                    input.classList.add('sub-goal');
-                    input.placeholder = `핵심 목표 ${b + 1}`;
-                } else {
-                    input.placeholder = `세부 실행`;
-                }
+            if (b === 4 && c === 4) {
+                input.classList.add('main-goal');
+                input.placeholder = '최종 목표';
+            } else if (c === 4 || b === 4) {
+                input.classList.add('sub-goal');
+                if (b === 4) input.placeholder = `핵심 목표 ${c + 1}`;
+                if (c === 4) input.placeholder = `핵심 목표 ${b + 1}`;
             }
 
-            // 데이터 불러오기
             const key = `${b}-${c}`;
             if (savedData[key]) {
                 input.value = savedData[key];
@@ -65,19 +52,59 @@ function initMandalart() {
     }
 }
 
-// 3. 동기화 및 저장 로직
+// 3. 예시 만다라트 생성 (오타니 쇼헤이)
+function initExampleMandalart() {
+    const data = {
+        // 중앙 블록
+        "4-4": "8구단 드래프트 1순위",
+        "4-0": "몸만들기", "4-1": "제구", "4-2": "구위",
+        "4-3": "스피드 160km/h", "4-5": "변화구",
+        "4-6": "운", "4-7": "인간성", "4-8": "멘탈",
+
+        // 몸만들기 블록 (0번)
+        "0-4": "몸만들기",
+        "0-0": "영양제 먹기", "0-1": "FSQ 90kg", "0-2": "유연성",
+        "0-3": "체력 유지", "0-5": "식사 7그릇",
+        "0-6": "RSQ 130kg", "0-7": "근육량 증가", "0-8": "부상 방지",
+
+        // 운 블록 (6번)
+        "6-4": "운",
+        "6-0": "인사하기", "6-1": "쓰레기 줍기", "6-2": "심판을 대하는 태도",
+        "6-3": "장비 소중히", "6-5": "플러스 사고",
+        "6-6": "응원받는 사람", "6-7": "독서", "6-8": "방 청소"
+    };
+
+    // 다른 핵심 목표들의 중심 셀도 채우기
+    const subGoals = ["몸만들기", "제구", "구위", "스피드 160km/h", "메인", "변화구", "운", "인간성", "멘탈"];
+    subGoals.forEach((goal, i) => {
+        if (i !== 4) data[`${i}-4`] = goal;
+    });
+
+    for (let b = 0; b < 9; b++) {
+        const block = document.createElement('div');
+        block.classList.add('block');
+        for (let c = 0; c < 9; c++) {
+            const div = document.createElement('div');
+            div.classList.add('cell');
+            if (b === 4 && c === 4) div.classList.add('main-goal');
+            else if (c === 4 || b === 4) div.classList.add('sub-goal');
+            
+            div.textContent = data[`${b}-${c}`] || "";
+            block.appendChild(div);
+        }
+        exampleMandalart.appendChild(block);
+    }
+}
+
+// 4. 동기화 및 저장 로직
 function handleInput(e) {
     const b = parseInt(e.target.dataset.block);
     const c = parseInt(e.target.dataset.cell);
     const value = e.target.value;
 
-    // 동기화 규칙:
-    // 1. 중앙 블록(4)의 주변 셀(c != 4) 입력 시 -> 해당 인덱스의 블록(c)의 중심 셀(4) 동기화
     if (b === 4 && c !== 4) {
         updateCell(c, 4, value);
-    } 
-    // 2. 주변 블록(b != 4)의 중심 셀(4) 입력 시 -> 중앙 블록(4)의 해당 인덱스 셀(b) 동기화
-    else if (b !== 4 && c === 4) {
+    } else if (b !== 4 && c === 4) {
         updateCell(4, b, value);
     }
 
@@ -85,7 +112,7 @@ function handleInput(e) {
 }
 
 function updateCell(b, c, value) {
-    const target = document.querySelector(`.cell[data-block="${b}"][data-cell="${c}"]`);
+    const target = document.querySelector(`#mandalart .cell[data-block="${b}"][data-cell="${c}"]`);
     if (target) {
         target.value = value;
     }
@@ -93,7 +120,7 @@ function updateCell(b, c, value) {
 
 function saveAllData() {
     const data = {};
-    document.querySelectorAll('.cell').forEach(input => {
+    document.querySelectorAll('#mandalart .cell').forEach(input => {
         const key = `${input.dataset.block}-${input.dataset.cell}`;
         if (input.value) {
             data[key] = input.value;
@@ -103,3 +130,4 @@ function saveAllData() {
 }
 
 initMandalart();
+initExampleMandalart();
