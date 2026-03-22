@@ -2,24 +2,12 @@ const mandalart = document.getElementById('mandalart');
 const myVisionMandalart = document.getElementById('myVisionMandalart');
 const exampleMandalart = document.getElementById('exampleMandalart');
 const versesGrid = document.getElementById('versesGrid');
-const themeToggle = document.getElementById('themeToggle');
 const currentTimeDisplay = document.getElementById('currentTime');
 const deadlineInput = document.getElementById('deadlineDate');
 const body = document.body;
 
-// 1. 테마 관리
-const currentTheme = localStorage.getItem('theme');
-if (currentTheme === 'dark') {
-    body.classList.add('dark-mode');
-    themeToggle.textContent = '🌙';
-}
-
-themeToggle.addEventListener('click', () => {
-    body.classList.toggle('dark-mode');
-    const theme = body.classList.contains('dark-mode') ? 'dark' : 'light';
-    themeToggle.textContent = theme === 'dark' ? '🌙' : '☀️';
-    localStorage.setItem('theme', theme);
-});
+// 1. 테마 관리 제거 (항상 화이트 모드)
+localStorage.removeItem('theme');
 
 // 2. 현재 시간 표시 기능
 function updateClock() {
@@ -40,9 +28,11 @@ const savedDeadline = localStorage.getItem('mandalartDeadline');
 if (savedDeadline) deadlineInput.value = savedDeadline;
 deadlineInput.addEventListener('change', (e) => localStorage.setItem('mandalartDeadline', e.target.value));
 
-// 4. 만다라트 그리드 생성
+// 4. 공통 만다라트 생성 로직
 function createMandalartGrid(container, storageKey, isEditable = true) {
     const savedData = JSON.parse(localStorage.getItem(storageKey)) || {};
+    const savedVerses = JSON.parse(localStorage.getItem(storageKey + '_verses')) || {};
+    
     const defaultKeywords = storageKey === 'myVisionData' ? [
         "나는새로운피조물", "행복한가정과가족", "건강한라이프",
         "건강한공동체", "내잔이넘치는풍요", "개인의성장",
@@ -125,21 +115,17 @@ function initVerseSection() {
     for (let i = 0; i < 9; i++) {
         const item = document.createElement('div');
         item.classList.add('verse-item');
-        
         const span = document.createElement('span');
         span.textContent = labels[i];
-        
         const input = document.createElement('input');
         input.classList.add('verse-input');
         input.placeholder = `${labels[i]} 관련 말씀`;
         input.value = savedVerses[i] || "";
-        
         input.addEventListener('input', (e) => {
             const verses = JSON.parse(localStorage.getItem('mandalartData_verses')) || {};
             verses[i] = e.target.value;
             localStorage.setItem('mandalartData_verses', JSON.stringify(verses));
         });
-
         item.appendChild(span);
         item.appendChild(input);
         versesGrid.appendChild(item);
