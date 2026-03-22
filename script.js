@@ -1,4 +1,5 @@
 const mandalart = document.getElementById('mandalart');
+const myVisionMandalart = document.getElementById('myVisionMandalart');
 const exampleMandalart = document.getElementById('exampleMandalart');
 const themeToggle = document.getElementById('themeToggle');
 const currentTimeDisplay = document.getElementById('currentTime');
@@ -85,21 +86,16 @@ function initMandalart() {
                 }
             }
 
-            // 핵심 목표 셀에만 이미지 업로드 버튼 추가
             if (isCore) {
                 const uploadBtn = document.createElement('button');
                 uploadBtn.className = 'image-upload-btn';
                 uploadBtn.innerHTML = '📷';
-                uploadBtn.title = '이미지 추가';
-                
                 const fileInput = document.createElement('input');
                 fileInput.type = 'file';
                 fileInput.accept = 'image/*';
                 fileInput.style.display = 'none';
-                
                 uploadBtn.addEventListener('click', () => fileInput.click());
                 fileInput.addEventListener('change', (e) => handleImageUpload(e, input));
-                
                 wrapper.appendChild(uploadBtn);
                 wrapper.appendChild(fileInput);
             }
@@ -112,64 +108,50 @@ function initMandalart() {
     }
 }
 
-// 이미지 업로드 처리
-function handleImageUpload(e, textCell) {
-    const file = e.target.files[0];
-    if (!file) return;
+// 5. 나의 비전 예시 생성
+function initMyVisionMandalart() {
+    const keywords = [
+        "나는새로운피조물", "행복한가정과가족", "건강한라이프",
+        "건강한공동체", "내잔이넘치는풍요", "개인의성장",
+        "프로페셔널", "잠언31장의여인", "나를둘러싼환경"
+    ];
+    
+    // 중앙 블록(4)의 각 셀 및 주변 블록의 중심(4) 채우기
+    const data = {};
+    keywords.forEach((word, i) => {
+        // 중앙 블록의 각 셀 (4번 블록의 0~8번 셀)
+        data[`4-${i}`] = word;
+        // 각 블록의 중심 (0~8번 블록의 4번 셀)
+        if (i !== 4) data[`${i}-4`] = word;
+    });
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-        const base64Image = event.target.result;
-        applyImageToCell(textCell, base64Image);
-        
-        // 동기화 처리
-        const b = parseInt(textCell.dataset.block);
-        const c = parseInt(textCell.dataset.cell);
-        if (b === 4 && c !== 4) {
-            syncImage(c, 4, base64Image);
-        } else if (b !== 4 && c === 4) {
-            syncImage(4, b, base64Image);
+    for (let b = 0; b < 9; b++) {
+        const block = document.createElement('div');
+        block.classList.add('block');
+        for (let c = 0; c < 9; c++) {
+            const div = document.createElement('div');
+            div.classList.add('cell');
+            if (b === 4 && c === 4) div.classList.add('main-goal');
+            else if (c === 4 || b === 4) div.classList.add('sub-goal');
+            div.textContent = data[`${b}-${c}`] || "";
+            block.appendChild(div);
         }
-        
-        saveAllData();
-    };
-    reader.readAsDataURL(file);
-}
-
-function applyImageToCell(cell, imageUrl) {
-    cell.classList.add('has-image');
-    cell.style.backgroundImage = `url(${imageUrl})`;
-    cell.dataset.image = imageUrl; // 데이터 속성에 저장
-}
-
-function syncImage(b, c, imageUrl) {
-    const target = document.querySelector(`#mandalart .cell[data-block="${b}"][data-cell="${c}"]`);
-    if (target) {
-        applyImageToCell(target, imageUrl);
+        myVisionMandalart.appendChild(block);
     }
 }
 
-// 5. 예시 만다라트 생성
+// 6. 오타니 쇼헤이의 예시 생성
 function initExampleMandalart() {
     const data = {
         "4-4": "8구단 드래프트 1순위",
         "4-0": "몸만들기", "4-1": "제구", "4-2": "구위",
         "4-3": "스피드 160km/h", "4-5": "변화구",
         "4-6": "운", "4-7": "인간성", "4-8": "멘탈",
-        "0-4": "몸만들기",
-        "0-0": "영양제 먹기", "0-1": "FSQ 90kg", "0-2": "유연성",
-        "0-3": "체력 유지", "0-5": "식사 7그릇",
-        "0-6": "RSQ 130kg", "0-7": "근육량 증가", "0-8": "부상 방지",
-        "6-4": "운",
-        "6-0": "인사하기", "6-1": "쓰레기 줍기", "6-2": "심판을 대하는 태도",
-        "6-3": "장비 소중히", "6-5": "플러스 사고",
-        "6-6": "응원받는 사람", "6-7": "독서", "6-8": "방 청소"
+        "0-4": "몸만들기", "0-0": "영양제 먹기", "0-1": "FSQ 90kg", "0-2": "유연성", "0-3": "체력 유지", "0-5": "식사 7그릇", "0-6": "RSQ 130kg", "0-7": "근육량 증가", "0-8": "부상 방지",
+        "6-4": "운", "6-0": "인사하기", "6-1": "쓰레기 줍기", "6-2": "심판을 대하는 태도", "6-3": "장비 소중히", "6-5": "플러스 사고", "6-6": "응원받는 사람", "6-7": "독서", "6-8": "방 청소"
     };
-
     const subGoals = ["몸만들기", "제구", "구위", "스피드 160km/h", "메인", "변화구", "운", "인간성", "멘탈"];
-    subGoals.forEach((goal, i) => {
-        if (i !== 4) data[`${i}-4`] = goal;
-    });
+    subGoals.forEach((goal, i) => { if (i !== 4) data[`${i}-4`] = goal; });
 
     for (let b = 0; b < 9; b++) {
         const block = document.createElement('div');
@@ -186,39 +168,57 @@ function initExampleMandalart() {
     }
 }
 
-// 6. 동기화 및 저장 로직
+// 이미지 업로드 처리
+function handleImageUpload(e, textCell) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+        const base64Image = event.target.result;
+        applyImageToCell(textCell, base64Image);
+        const b = parseInt(textCell.dataset.block);
+        const c = parseInt(textCell.dataset.cell);
+        if (b === 4 && c !== 4) syncImage(c, 4, base64Image);
+        else if (b !== 4 && c === 4) syncImage(4, b, base64Image);
+        saveAllData();
+    };
+    reader.readAsDataURL(file);
+}
+
+function applyImageToCell(cell, imageUrl) {
+    cell.classList.add('has-image');
+    cell.style.backgroundImage = `url(${imageUrl})`;
+    cell.dataset.image = imageUrl;
+}
+
+function syncImage(b, c, imageUrl) {
+    const target = document.querySelector(`#mandalart .cell[data-block="${b}"][data-cell="${c}"]`);
+    if (target) applyImageToCell(target, imageUrl);
+}
+
 function handleInput(e) {
     const b = parseInt(e.target.dataset.block);
     const c = parseInt(e.target.dataset.cell);
     const value = e.target.value;
-
-    if (b === 4 && c !== 4) {
-        updateCell(c, 4, value);
-    } else if (b !== 4 && c === 4) {
-        updateCell(4, b, value);
-    }
-
+    if (b === 4 && c !== 4) updateCell(c, 4, value);
+    else if (b !== 4 && c === 4) updateCell(4, b, value);
     saveAllData();
 }
 
 function updateCell(b, c, value) {
     const target = document.querySelector(`#mandalart .cell[data-block="${b}"][data-cell="${c}"]`);
-    if (target) {
-        target.value = value;
-    }
+    if (target) target.value = value;
 }
 
 function saveAllData() {
     const data = {};
     document.querySelectorAll('#mandalart .cell').forEach(input => {
         const key = `${input.dataset.block}-${input.dataset.cell}`;
-        data[key] = {
-            text: input.value,
-            image: input.dataset.image || null
-        };
+        data[key] = { text: input.value, image: input.dataset.image || null };
     });
     localStorage.setItem('mandalartData', JSON.stringify(data));
 }
 
 initMandalart();
+initMyVisionMandalart();
 initExampleMandalart();
