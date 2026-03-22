@@ -1,5 +1,27 @@
 const resultDiv = document.getElementById('result');
 const drawBtn = document.getElementById('drawBtn');
+const themeToggle = document.getElementById('themeToggle');
+const body = document.body;
+
+// 테마 관리 로직
+const currentTheme = localStorage.getItem('theme');
+if (currentTheme === 'dark') {
+    body.classList.add('dark-mode');
+    themeToggle.textContent = '🌙';
+}
+
+themeToggle.addEventListener('click', () => {
+    body.classList.toggle('dark-mode');
+    
+    let theme = 'light';
+    if (body.classList.contains('dark-mode')) {
+        theme = 'dark';
+        themeToggle.textContent = '🌙';
+    } else {
+        themeToggle.textContent = '☀️';
+    }
+    localStorage.setItem('theme', theme);
+});
 
 // 로또 번호 생성 함수
 function generateLottoNumbers() {

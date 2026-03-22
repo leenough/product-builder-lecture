@@ -1,4 +1,5 @@
 :root {
+    /* Light Mode Variables */
     --primary-color: #4a90e2;
     --background-color: #f0f2f5;
     --card-background: #ffffff;
@@ -9,6 +10,16 @@
     --ball-gray: #aaaaaa;
     --ball-green: #b0d840;
     --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --footer-color: #888;
+}
+
+body.dark-mode {
+    /* Dark Mode Variables */
+    --background-color: #1a1a1a;
+    --card-background: #2d2d2d;
+    --text-color: #f0f0f0;
+    --shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+    --footer-color: #aaa;
 }
 
 * {
@@ -25,6 +36,7 @@ body {
     justify-content: center;
     align-items: center;
     min-height: 100vh;
+    transition: background-color 0.3s, color 0.3s;
 }
 
 .container {
@@ -35,6 +47,34 @@ body {
     text-align: center;
     width: 90%;
     max-width: 600px;
+    position: relative;
+    transition: background-color 0.3s, box-shadow 0.3s;
+}
+
+/* Theme Toggle Button Style */
+.theme-toggle {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: 1px solid var(--primary-color);
+    color: var(--primary-color);
+    padding: 0.5rem;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    box-shadow: none;
+    transition: all 0.3s;
+}
+
+.theme-toggle:hover {
+    background-color: var(--primary-color);
+    color: white;
 }
 
 h1 {
@@ -49,7 +89,7 @@ h1 {
     flex-wrap: wrap;
     gap: 10px;
     margin-bottom: 2rem;
-    min-height: 60px; /* 공이 없을 때도 공간 유지 */
+    min-height: 60px;
 }
 
 .ball {
@@ -64,13 +104,11 @@ h1 {
     color: white;
     text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
     box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
-    /* 애니메이션 */
     opacity: 0;
     transform: scale(0.5);
     animation: popIn 0.5s forwards;
 }
 
-/* 공 색상 클래스 */
 .ball.yellow { background-color: var(--ball-yellow); }
 .ball.blue { background-color: var(--ball-blue); }
 .ball.red { background-color: var(--ball-red); }
@@ -84,7 +122,7 @@ h1 {
     }
 }
 
-button {
+#drawBtn {
     background-color: var(--primary-color);
     color: white;
     border: none;
@@ -96,16 +134,16 @@ button {
     box-shadow: var(--shadow);
 }
 
-button:hover {
+#drawBtn:hover {
     background-color: #357abd;
 }
 
-button:active {
+#drawBtn:active {
     transform: scale(0.98);
 }
 
 .footer {
     margin-top: 2rem;
     font-size: 0.8rem;
-    color: #888;
+    color: var(--footer-color);
 }
