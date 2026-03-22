@@ -1,6 +1,8 @@
 const mandalart = document.getElementById('mandalart');
 const exampleMandalart = document.getElementById('exampleMandalart');
 const themeToggle = document.getElementById('themeToggle');
+const currentTimeDisplay = document.getElementById('currentTime');
+const deadlineInput = document.getElementById('deadlineDate');
 const body = document.body;
 
 // 1. 테마 관리
@@ -17,7 +19,32 @@ themeToggle.addEventListener('click', () => {
     localStorage.setItem('theme', theme);
 });
 
-// 2. 만다라트 그리드 생성 (편집용)
+// 2. 현재 시간 표시 기능
+function updateClock() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+    
+    currentTimeDisplay.textContent = `현재 시각: ${year}년 ${month}월 ${day}일 ${hours}:${minutes}:${seconds}`;
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// 3. 데드라인 관리
+const savedDeadline = localStorage.getItem('mandalartDeadline');
+if (savedDeadline) {
+    deadlineInput.value = savedDeadline;
+}
+
+deadlineInput.addEventListener('change', (e) => {
+    localStorage.setItem('mandalartDeadline', e.target.value);
+});
+
+// 4. 만다라트 그리드 생성 (편집용)
 function initMandalart() {
     const savedData = JSON.parse(localStorage.getItem('mandalartData')) || {};
 
@@ -52,29 +79,23 @@ function initMandalart() {
     }
 }
 
-// 3. 예시 만다라트 생성 (오타니 쇼헤이)
+// 5. 예시 만다라트 생성 (오타니 쇼헤이)
 function initExampleMandalart() {
     const data = {
-        // 중앙 블록
         "4-4": "8구단 드래프트 1순위",
         "4-0": "몸만들기", "4-1": "제구", "4-2": "구위",
         "4-3": "스피드 160km/h", "4-5": "변화구",
         "4-6": "운", "4-7": "인간성", "4-8": "멘탈",
-
-        // 몸만들기 블록 (0번)
         "0-4": "몸만들기",
         "0-0": "영양제 먹기", "0-1": "FSQ 90kg", "0-2": "유연성",
         "0-3": "체력 유지", "0-5": "식사 7그릇",
         "0-6": "RSQ 130kg", "0-7": "근육량 증가", "0-8": "부상 방지",
-
-        // 운 블록 (6번)
         "6-4": "운",
         "6-0": "인사하기", "6-1": "쓰레기 줍기", "6-2": "심판을 대하는 태도",
         "6-3": "장비 소중히", "6-5": "플러스 사고",
         "6-6": "응원받는 사람", "6-7": "독서", "6-8": "방 청소"
     };
 
-    // 다른 핵심 목표들의 중심 셀도 채우기
     const subGoals = ["몸만들기", "제구", "구위", "스피드 160km/h", "메인", "변화구", "운", "인간성", "멘탈"];
     subGoals.forEach((goal, i) => {
         if (i !== 4) data[`${i}-4`] = goal;
@@ -96,7 +117,7 @@ function initExampleMandalart() {
     }
 }
 
-// 4. 동기화 및 저장 로직
+// 6. 동기화 및 저장 로직
 function handleInput(e) {
     const b = parseInt(e.target.dataset.block);
     const c = parseInt(e.target.dataset.cell);
